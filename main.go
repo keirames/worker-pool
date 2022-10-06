@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -32,6 +33,18 @@ func getMessages(sess *session.Session, queueUrl string, maxMessages int) (*sqs.
 	return msgRes, nil
 }
 
+func worker(tasks <-chan int, results chan<- int) {
+	fmt.Println("Worker initialize...")
+	for task := range tasks {
+		time.Sleep(time.Second)
+		fmt.Println("Done task", task)
+		results <- task
+	}
+}
+
+func fillTasks(tasks chan<- int) {
+}
+
 func main() {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		Profile: "default",
@@ -46,12 +59,30 @@ func main() {
 		fmt.Println("Fail to get url: ", err)
 		return
 	}
+	fmt.Println(urlRes)
 
-	msgRes, err := getMessages(sess, *urlRes.QueueUrl, 1)
-	if err != nil {
-		fmt.Println("Fail to get messages: ", err)
-		return
+	// Make a worker pool
+	const numTasks = 100
+
+	tasks := make(chan int, numTasks)
+	results := make(chan int, numTasks)
+
+	// Note that numWorker really depends on machine specs
+	const numWorkers = 1
+	for i := 0; i < numWorkers; i++ {
+		go worker(tasks, results)
 	}
 
-	fmt.Println(msgRes)
+	for {
+		result := <-results
+		fmt.Println(result)
+	}
+
+	// msgRes, err := getMessages(sess, *urlRes.QueueUrl, 1)
+	// if err != nil {
+	// 	fmt.Println("Fail to get messages: ", err)
+	// 	return
+	// }
+
+	// fmt.Println(msgRes)
 }
