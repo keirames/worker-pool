@@ -48,7 +48,7 @@ func worker(id int, tasks <-chan string, results chan<- string) {
 	}
 }
 
-func main() {
+func mainOld() {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		Profile: "default",
 		Config: aws.Config{
@@ -103,4 +103,8 @@ func main() {
 	// }
 
 	// fmt.Println(msgRes)
+}
+
+func main() {
+	wpool := New(10)
 }
