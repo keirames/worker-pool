@@ -36,18 +36,6 @@ func getMessages(sess *session.Session, queueUrl string, maxMessages int) (*sqs.
 	return msgRes, nil
 }
 
-func worker(id int, tasks <-chan string, results chan<- string) {
-	for task := range tasks {
-		fmt.Println("Worker", id, "started")
-		if id == 1 {
-			time.Sleep(time.Second * 20)
-		} else {
-		}
-		fmt.Println("Worker", id, "done")
-		results <- task
-	}
-}
-
 func mainOld() {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		Profile: "default",
@@ -103,8 +91,4 @@ func mainOld() {
 	// }
 
 	// fmt.Println(msgRes)
-}
-
-func main() {
-	wpool := New(10)
 }
